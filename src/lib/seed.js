@@ -36,7 +36,7 @@ export function makeLaunchedList() {
     cards: [
       {
         id: uid('card'),
-        title: 'AI SDR for solar — live on YouTube + Reels',
+        title: 'AI SDR for solar, live on YouTube and Reels',
         labels: ['youtube', 'instagram', 'tiktok'],
         members: ['m1'],
         desc: '',
@@ -66,7 +66,7 @@ const initial = {
       cards: [
         {
           id: uid('card'),
-          title: 'Meta Ads MCP — control campaigns from Claude Code',
+          title: 'Meta Ads MCP, control campaigns from Claude Code',
           labels: ['youtube', 'instagram', 'tiktok'],
           members: ['m1'],
           desc: '',
@@ -75,7 +75,7 @@ const initial = {
         },
         {
           id: uid('card'),
-          title: "I don't take on every client — here's how I choose",
+          title: "I don't take on every client, here's how I choose",
           labels: ['linkedin'],
           members: ['m1'],
           desc: '',
@@ -108,7 +108,7 @@ const initial = {
       cards: [
         {
           id: uid('card'),
-          title: 'D3 Scraper Agent — full build breakdown',
+          title: 'D3 Scraper Agent, full build breakdown',
           labels: ['youtube', 'instagram'],
           members: ['m1'],
           desc: '',
@@ -122,7 +122,7 @@ const initial = {
         },
         {
           id: uid('card'),
-          title: 'Claude Code posts 5 platforms a day — automation',
+          title: 'Claude Code posts 5 platforms a day, automation',
           labels: ['youtube', 'tiktok'],
           members: [],
           desc: '',
@@ -147,14 +147,14 @@ const initial = {
         },
         {
           id: uid('card'),
-          title: 'Day in the Life — AI agent studio',
+          title: 'Day in the Life, AI agent studio',
           labels: ['youtube', 'instagram'],
           members: ['m2', 'm1'],
           desc: '',
           due: null,
           checklist: [
             { id: uid('t'), text: 'Intro', done: true },
-            { id: uid('t'), text: 'B-roll', done: true },
+            { id: uid('t'), text: 'B roll', done: true },
             { id: uid('t'), text: 'Voiceover', done: false },
           ],
         },
@@ -166,7 +166,7 @@ const initial = {
       cards: [
         {
           id: uid('card'),
-          title: 'Claude Code — SECOND BRAIN #AI #Automation',
+          title: 'Claude Code, SECOND BRAIN #AI #Automation',
           labels: ['youtube', 'instagram'],
           members: ['m3'],
           desc: '',
@@ -203,7 +203,7 @@ const initial = {
       cards: [
         {
           id: uid('card'),
-          title: 'LinkedIn — AI Mastermind for founders',
+          title: 'LinkedIn, AI Mastermind for founders',
           labels: ['linkedin'],
           members: ['m4'],
           cover: cover('mastermind'),
@@ -213,7 +213,7 @@ const initial = {
         },
         {
           id: uid('card'),
-          title: 'Solar cold-call agent — final QA pass',
+          title: 'Solar cold call agent, final QA pass',
           labels: ['youtube', 'instagram'],
           members: ['m4'],
           desc: '',
@@ -241,5 +241,31 @@ export function ensureLists(state) {
   const list = makeLaunchedList()
   if (qaIdx >= 0) lists.splice(qaIdx + 1, 0, list)
   else lists.push(list)
+  return { ...state, lists }
+}
+
+export function stripDashes(text) {
+  if (typeof text !== 'string' || !/[—–-]/.test(text)) return text
+  return text
+    .replace(/\s*[—–]\s*/g, ', ')
+    .replace(/\s+-\s+/g, ', ')
+    .replace(/([A-Za-z0-9])-([A-Za-z0-9])/g, '$1 $2')
+    .replace(/^[\s,]+|[\s,]+$/g, '')
+    .replace(/\s*,\s*,+\s*/g, ', ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+export function sanitizeState(state) {
+  if (!state || !Array.isArray(state.lists)) return state
+  const lists = state.lists.map((l) => ({
+    ...l,
+    cards: (l.cards || []).map((c) => ({
+      ...c,
+      title: stripDashes(c.title),
+      desc: stripDashes(c.desc),
+      checklist: (c.checklist || []).map((t) => ({ ...t, text: stripDashes(t.text) })),
+    })),
+  }))
   return { ...state, lists }
 }

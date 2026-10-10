@@ -91,7 +91,7 @@ export default function CardModal({
             <AutoTextarea
               className="modal-title"
               value={card.title}
-              placeholder="Card title"
+              placeholder="Hook (post title)"
               onChange={(v) => onUpdate(card.id, { title: v })}
             />
             <button className="modal-close" aria-label="Close" onClick={onClose}>
@@ -254,10 +254,10 @@ export default function CardModal({
           </div>
 
           <div className="section">
-            <div className="field-label">Description</div>
+            <div className="field-label">Post body</div>
             <textarea
               className="input-dark"
-              placeholder="Add a more detailed description…"
+              placeholder="Write the full post body here…"
               value={card.desc || ''}
               onChange={(e) => onUpdate(card.id, { desc: e.target.value })}
             />

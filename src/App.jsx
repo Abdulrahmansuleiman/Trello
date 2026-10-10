@@ -3,13 +3,13 @@ import TopBar from './components/TopBar.jsx'
 import List from './components/List.jsx'
 import CardModal from './components/CardModal.jsx'
 import { IconPlus, IconX } from './components/icons.jsx'
-import { LABELS, makeInitialState, ensureLists } from './lib/seed.js'
+import { LABELS, makeInitialState, ensureLists, sanitizeState } from './lib/seed.js'
 import { loadState, saveState, uid } from './lib/storage.js'
 
 const KEY = 'launchops-trello-board-v1'
 
 export default function App() {
-  const [state, setState] = useState(() => ensureLists(loadState(KEY, makeInitialState())))
+  const [state, setState] = useState(() => sanitizeState(ensureLists(loadState(KEY, makeInitialState()))))
   const [openCardId, setOpenCardId] = useState(null)
   const [dragging, setDragging] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
