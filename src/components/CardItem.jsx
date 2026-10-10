@@ -4,6 +4,7 @@ import {
   IconClock,
   IconDescription,
   IconAttachment,
+  IconComment,
 } from './icons.jsx'
 import { formatDue, dueStatus } from '../lib/storage.js'
 
@@ -27,9 +28,11 @@ export default function CardItem({
   const done = (card.checklist || []).filter((c) => c.done).length
   const total = (card.checklist || []).length
   const hasDesc = card.desc && card.desc.trim().length > 0
+  const commentCount = (card.comments || []).length
   const dueSt = dueStatus(card.due, card.dueComplete)
 
-  const showFoot = cardMembers.length > 0 || card.due || total > 0 || hasDesc || card.cover
+  const showFoot =
+    cardMembers.length > 0 || card.due || total > 0 || hasDesc || card.cover || commentCount > 0
 
   return (
     <div
@@ -86,6 +89,12 @@ export default function CardItem({
             {card.cover && (
               <span className="badge">
                 <IconAttachment size={13} />
+              </span>
+            )}
+            {commentCount > 0 && (
+              <span className="badge">
+                <IconComment size={14} />
+                {commentCount}
               </span>
             )}
           </div>

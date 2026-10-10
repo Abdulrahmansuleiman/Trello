@@ -67,7 +67,7 @@ export default function App() {
               ...l,
               cards: [
                 ...l.cards,
-                { id: uid('card'), title, labels: [], members: [], desc: '', due: null, checklist: [] },
+                { id: uid('card'), title, labels: [], members: [], desc: '', due: null, checklist: [], comments: [] },
               ],
             }
           : l

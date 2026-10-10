@@ -78,6 +78,19 @@ export const IconDescription = ({ size = 14 }) => (
   </svg>
 )
 
+export const IconComment = ({ size = 14 }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} style={s} aria-hidden="true">
+    <path
+      d="M20 4H4a1 1 0 00-1 1v11a1 1 0 001 1h3v3.6L12.4 17H20a1 1 0 001-1V5a1 1 0 00-1-1z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
 export const IconAttachment = ({ size = 13 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} style={s} aria-hidden="true">
     <path d="M21 11.5l-8.5 8.5a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7L10 17.4a1.7 1.7 0 01-2.4-2.4l7.3-7.3" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />

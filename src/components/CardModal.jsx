@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Avatar, LabelChip } from './common.jsx'
-import { IconX, IconCheck, IconTrash, IconPlus, IconClock } from './icons.jsx'
-import { dueStatus, uid } from '../lib/storage.js'
+import { IconX, IconCheck, IconTrash, IconPlus, IconClock, IconComment } from './icons.jsx'
+import { dueStatus, uid, timeAgo } from '../lib/storage.js'
+import { CURRENT_USER } from '../lib/seed.js'
 
 function AutoTextarea({ value, onChange, className, placeholder, minRows = 1 }) {
   const ref = useRef(null)
@@ -38,8 +39,10 @@ export default function CardModal({
   onMoveToList,
 }) {
   const [newItem, setNewItem] = useState('')
+  const [commentText, setCommentText] = useState('')
   const list = lists.find((l) => l.cards.some((c) => c.id === card.id))
   const checklist = card.checklist || []
+  const comments = card.comments || []
   const done = checklist.filter((c) => c.done).length
   const total = checklist.length
   const pct = total ? Math.round((done / total) * 100) : 0
@@ -70,6 +73,28 @@ export default function CardModal({
       checklist: [...checklist, { id: uid('t'), text: v, done: false }],
     })
     setNewItem('')
+  }
+  const addComment = () => {
+    const v = commentText.trim()
+    if (!v) return
+    onUpdate(card.id, {
+      comments: [
+        ...comments,
+        {
+          id: uid('c'),
+          authorId: CURRENT_USER.id,
+          authorName: CURRENT_USER.name,
+          initials: CURRENT_USER.initials,
+          color: CURRENT_USER.color,
+          text: v,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    })
+    setCommentText('')
+  }
+  const removeComment = (id) => {
+    onUpdate(card.id, { comments: comments.filter((c) => c.id !== id) })
   }
 
   return (
@@ -261,6 +286,63 @@ export default function CardModal({
               value={card.desc || ''}
               onChange={(e) => onUpdate(card.id, { desc: e.target.value })}
             />
+          </div>
+
+          <div className="section">
+            <div className="field-label">
+              <IconComment size={14} /> Comments and activity
+            </div>
+
+            <div className="comment-composer">
+              <Avatar member={CURRENT_USER} size="sm" />
+              <textarea
+                className="comment-input"
+                placeholder="Write a comment…"
+                value={commentText}
+                rows={1}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) addComment()
+                }}
+              />
+            </div>
+            <div className="composer-actions">
+              <button className="btn-blue" onClick={addComment} disabled={!commentText.trim()}>
+                Comment
+              </button>
+              {commentText.trim() && (
+                <button className="btn-ghost" aria-label="Cancel comment" onClick={() => setCommentText('')}>
+                  <IconX size={16} />
+                </button>
+              )}
+            </div>
+
+            <div className="comment-list">
+              {comments.length === 0 ? (
+                <div className="empty-hint">No comments yet.</div>
+              ) : (
+                comments.map((c) => (
+                  <div className="comment" key={c.id}>
+                    <Avatar
+                      member={{ name: c.authorName, initials: c.initials, color: c.color }}
+                      size="sm"
+                    />
+                    <div className="comment-main">
+                      <div className="comment-head">
+                        <span className="comment-author">{c.authorName}</span>
+                        <span className="comment-time">{timeAgo(c.createdAt)}</span>
+                      </div>
+                      <div className="comment-text">{c.text}</div>
+                      <div className="comment-actions">
+                        <button className="comment-del" onClick={() => removeComment(c.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <button className="modal-danger" onClick={() => onDelete(card.id)}>

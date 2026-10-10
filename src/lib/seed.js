@@ -25,6 +25,18 @@ export const MEMBERS = [
   { id: 'm5', name: 'Client', initials: 'CL', color: '#00C2E0' },
 ]
 
+export const CURRENT_USER = MEMBERS[0]
+
+const comment = (text, hoursAgo = 0) => ({
+  id: uid('c'),
+  authorId: CURRENT_USER.id,
+  authorName: CURRENT_USER.name,
+  initials: CURRENT_USER.initials,
+  color: CURRENT_USER.color,
+  text,
+  createdAt: new Date(Date.now() - hoursAgo * 36e5).toISOString(),
+})
+
 const cover = (seed) => `https://picsum.photos/seed/${seed}/480/260`
 
 export const LAUNCHED_LIST_ID = 'list-launched'
@@ -42,6 +54,7 @@ export function makeLaunchedList() {
         desc: '',
         due: null,
         checklist: [],
+        comments: [comment('Published and pinned. Watching the first 24 hours for reach.', 5)],
       },
       {
         id: uid('card'),
@@ -72,6 +85,7 @@ const initial = {
           desc: '',
           due: null,
           checklist: [],
+          comments: [comment('Open with the result, a number in the first line lands harder.', 2)],
         },
         {
           id: uid('card'),
