@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Avatar, LabelChip } from './common.jsx'
+import CoverImage from './CoverImage.jsx'
 import { IconX, IconCheck, IconTrash, IconPlus, IconClock, IconComment } from './icons.jsx'
 import { dueStatus, uid, timeAgo } from '../lib/storage.js'
 import { CURRENT_USER } from '../lib/seed.js'
@@ -107,7 +108,7 @@ export default function CardModal({
       <div className="modal">
         {card.cover && (
           <div className="modal-cover">
-            <img src={card.cover} alt="" draggable={false} />
+            <CoverImage src={card.cover} />
           </div>
         )}
 

@@ -1,4 +1,5 @@
 import { Avatar, LabelChip } from './common.jsx'
+import CoverImage from './CoverImage.jsx'
 import {
   IconCheckbox,
   IconClock,
@@ -52,7 +53,7 @@ export default function CardItem({
     >
       {card.cover ? (
         <div className="card-cover">
-          <img src={card.cover} alt="" draggable={false} />
+          <CoverImage src={card.cover} />
         </div>
       ) : null}
 
