@@ -37,7 +37,8 @@ const comment = (text, hoursAgo = 0) => ({
   createdAt: new Date(Date.now() - hoursAgo * 36e5).toISOString(),
 })
 
-const cover = (seed) => `https://picsum.photos/seed/${seed}/480/260`
+// Google Drive cover served through the drive-usercontent endpoint.
+const drive = (token) => `https://drive.google.com/u/0/drive-usercontent/${token}=w1600`
 
 export const LAUNCHED_LIST_ID = 'list-launched'
 
@@ -45,30 +46,12 @@ export function makeLaunchedList() {
   return {
     id: LAUNCHED_LIST_ID,
     title: 'Launched Post',
-    cards: [
-      {
-        id: uid('card'),
-        title: 'AI SDR for solar, live on YouTube and Reels',
-        labels: ['youtube', 'instagram', 'tiktok'],
-        members: ['m1'],
-        desc: '',
-        due: null,
-        checklist: [],
-        comments: [comment('Published and pinned. Watching the first 24 hours for reach.', 5)],
-      },
-      {
-        id: uid('card'),
-        title: 'Why founders are replacing SDRs with AI agents',
-        labels: ['linkedin'],
-        members: ['m1'],
-        desc: '',
-        due: null,
-        checklist: [],
-      },
-    ],
+    cards: [],
   }
 }
 
+// Canonical board content. This is what every browser sees when the shared
+// board store is empty, and it is republished whenever the store is reset.
 const initial = {
   board: { title: 'LaunchOps Media Content', starred: false },
   members: MEMBERS,
@@ -78,166 +61,71 @@ const initial = {
       title: 'Ideas',
       cards: [
         {
-          id: uid('card'),
-          title: 'Meta Ads MCP, control campaigns from Claude Code',
-          labels: ['youtube', 'instagram', 'tiktok'],
-          members: ['m1'],
-          desc: '',
-          due: null,
-          checklist: [],
-          comments: [comment('Open with the result, a number in the first line lands harder.', 2)],
-        },
-        {
-          id: uid('card'),
-          title: "I don't take on every client, here's how I choose",
+          id: 'card-mvfugu5v-seh3c',
+          title:
+            'TOF #8, The most expensive mistake: waiting for things to calm down before touching lead response.',
           labels: ['linkedin'],
-          members: ['m1'],
-          desc: '',
-          due: null,
-          checklist: [],
-        },
-        {
-          id: uid('card'),
-          title: 'Why solar companies are the best fit for AI SDRs',
-          labels: ['youtube', 'instagram'],
           members: [],
           desc: '',
           due: null,
           checklist: [],
+          comments: [],
+          cover: drive('1R5Jo_drJaqxfK229uA4tCwZWy0aziOm3'),
         },
         {
-          id: uid('card'),
-          title: 'My story: from agency work to building AI agents',
-          labels: ['linkedin', 'youtube'],
-          members: ['m1'],
+          id: 'card-mvfugsom-w3d0z',
+          title: 'TOF #2, Hire last. Fix the first reply before you fix the payroll.',
+          labels: ['linkedin'],
+          members: [],
           desc: '',
           due: null,
           checklist: [],
+          comments: [],
+          cover: drive('1B2XOq1JBisZeUz7VX_Zx7u8JUEL7zsRX'),
+        },
+        {
+          id: 'card-mvfugvx1-meenm',
+          title: 'MOF #4, What actually happens to an enquiry, from arrival to booked appointment.',
+          labels: ['linkedin'],
+          members: [],
+          desc: '',
+          due: null,
+          checklist: [],
+          comments: [],
+          cover: drive('12pQ4nSPfvKlknc5o3y1wCPiUmdw26iGd'),
+        },
+        {
+          id: 'card-mvfugxas-p126u',
+          title: "MOF #28, Saved replies, missed call text back, shared inbox: what each one can't do.",
+          labels: ['linkedin'],
+          members: [],
+          desc: '',
+          due: null,
+          checklist: [],
+          comments: [],
+          cover: drive('1f5ComeTN_T3swdTZLKK2hzjBVem5Td32'),
         },
       ],
     },
     {
       id: 'list-scripting',
       title: 'Scripting',
-      cards: [
-        {
-          id: uid('card'),
-          title: 'D3 Scraper Agent, full build breakdown',
-          labels: ['youtube', 'instagram'],
-          members: ['m1'],
-          desc: '',
-          due: null,
-          checklist: [
-            { id: uid('t'), text: 'Hook', done: true },
-            { id: uid('t'), text: 'Problem', done: true },
-            { id: uid('t'), text: 'Demo', done: false },
-            { id: uid('t'), text: 'CTA', done: false },
-          ],
-        },
-        {
-          id: uid('card'),
-          title: 'Claude Code posts 5 platforms a day, automation',
-          labels: ['youtube', 'tiktok'],
-          members: [],
-          desc: '',
-          due: null,
-          checklist: [],
-        },
-      ],
+      cards: [],
     },
     {
       id: 'list-filming',
       title: 'Filming',
-      cards: [
-        {
-          id: uid('card'),
-          title: 'I Built JARVIS with Claude Code for a Real Estate Client',
-          labels: ['youtube', 'instagram', 'tiktok'],
-          members: ['m2'],
-          cover: cover('jarvis'),
-          desc: '',
-          due: null,
-          checklist: [{ id: uid('t'), text: 'Shot list', done: true }],
-        },
-        {
-          id: uid('card'),
-          title: 'Day in the Life, AI agent studio',
-          labels: ['youtube', 'instagram'],
-          members: ['m2', 'm1'],
-          desc: '',
-          due: null,
-          checklist: [
-            { id: uid('t'), text: 'Intro', done: true },
-            { id: uid('t'), text: 'B roll', done: true },
-            { id: uid('t'), text: 'Voiceover', done: false },
-          ],
-        },
-      ],
+      cards: [],
     },
     {
       id: 'list-editing',
       title: 'Editing',
-      cards: [
-        {
-          id: uid('card'),
-          title: 'Claude Code, SECOND BRAIN #AI #Automation',
-          labels: ['youtube', 'instagram'],
-          members: ['m3'],
-          desc: '',
-          due: null,
-          checklist: [
-            { id: uid('t'), text: 'Cut rough', done: true },
-            { id: uid('t'), text: 'Subtitles', done: true },
-            { id: uid('t'), text: 'Thumbnail', done: false },
-          ],
-        },
-        {
-          id: uid('card'),
-          title: 'POV: you stopped buying templates and built a system',
-          labels: ['youtube', 'tiktok'],
-          members: ['m3'],
-          desc: '',
-          due: new Date(Date.now() + 3 * 864e5).toISOString(),
-          checklist: [{ id: uid('t'), text: 'Colour grade', done: true }],
-        },
-        {
-          id: uid('card'),
-          title: 'AI Voice Agent in 1 Hour',
-          labels: ['youtube'],
-          members: [],
-          desc: '',
-          due: null,
-          checklist: [],
-        },
-      ],
+      cards: [],
     },
     {
       id: 'list-qa',
       title: 'Quality Assurance',
-      cards: [
-        {
-          id: uid('card'),
-          title: 'LinkedIn, AI Mastermind for founders',
-          labels: ['linkedin'],
-          members: ['m4'],
-          cover: cover('mastermind'),
-          desc: '',
-          due: new Date(Date.now() + 1 * 864e5).toISOString(),
-          checklist: [{ id: uid('t'), text: 'Facts checked', done: true }],
-        },
-        {
-          id: uid('card'),
-          title: 'Solar cold call agent, final QA pass',
-          labels: ['youtube', 'instagram'],
-          members: ['m4'],
-          desc: '',
-          due: null,
-          checklist: [
-            { id: uid('t'), text: 'Audio levels', done: true },
-            { id: uid('t'), text: 'Captions', done: false },
-          ],
-        },
-      ],
+      cards: [],
     },
     makeLaunchedList(),
   ],
@@ -249,12 +137,17 @@ export function makeInitialState() {
 
 export function ensureLists(state) {
   if (!state || !Array.isArray(state.lists)) return state
-  if (state.lists.some((l) => l.id === LAUNCHED_LIST_ID)) return state
-  const lists = [...state.lists]
-  const qaIdx = lists.findIndex((l) => l.title === 'Quality Assurance')
-  const list = makeLaunchedList()
-  if (qaIdx >= 0) lists.splice(qaIdx + 1, 0, list)
-  else lists.push(list)
+  let lists = [...state.lists]
+
+  if (!lists.some((l) => l.id === LAUNCHED_LIST_ID)) {
+    const qaIdx = lists.findIndex((l) => l.title === 'Quality Assurance')
+    const list = makeLaunchedList()
+    if (qaIdx >= 0) lists.splice(qaIdx + 1, 0, list)
+    else lists.push(list)
+  }
+
+  lists = lists.map((l) => ({ ...l, cards: Array.isArray(l.cards) ? l.cards : [] }))
+
   return { ...state, lists }
 }
 
@@ -274,6 +167,7 @@ export function sanitizeState(state) {
   if (!state || !Array.isArray(state.lists)) return state
   const lists = state.lists.map((l) => ({
     ...l,
+    title: typeof l.title === 'string' ? l.title : String(l.title || ''),
     cards: (l.cards || []).map((c) => ({
       ...c,
       title: stripDashes(c.title),

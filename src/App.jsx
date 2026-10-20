@@ -6,10 +6,30 @@ import { IconPlus, IconX } from './components/icons.jsx'
 import { LABELS, makeInitialState, ensureLists, sanitizeState } from './lib/seed.js'
 import { loadState, saveState, uid } from './lib/storage.js'
 
-const KEY = 'launchops-trello-board-v1'
+const KEY = 'launchops-trello-board-v2'
+
+const normalize = (s) => (s && Array.isArray(s.lists) ? sanitizeState(ensureLists(s)) : s)
+
+const pullBoard = async () => {
+  const r = await fetch('/api/board', { cache: 'no-store' })
+  if (!r.ok) return null
+  const j = await r.json()
+  return j && j.ok && j.state ? j.state : null
+}
+
+const pushBoard = (state) =>
+  fetch('/api/board', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(state),
+  }).catch(() => null)
 
 export default function App() {
-  const [state, setState] = useState(() => sanitizeState(ensureLists(loadState(KEY, makeInitialState()))))
+  const seedRef = useRef(null)
+  if (seedRef.current === null) seedRef.current = normalize(loadState(KEY, makeInitialState()))
+
+  const [state, setState] = useState(seedRef.current)
+  const [hydrated, setHydrated] = useState(false)
   const [openCardId, setOpenCardId] = useState(null)
   const [dragging, setDragging] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
@@ -17,8 +37,66 @@ export default function App() {
   const [newListTitle, setNewListTitle] = useState('')
   const [toast, setToast] = useState(null)
   const toastTimer = useRef(null)
+  const quietUntil = useRef(0)
+  const skipPublish = useRef(true)
 
-  useEffect(() => saveState(KEY, state), [state])
+  // Load the shared board from the server. If nothing is stored yet, publish
+  // the canonical seed so every browser starts from the same content.
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const remote = await pullBoard()
+        if (!alive) return
+        if (remote) {
+          skipPublish.current = true
+          setState(normalize(remote))
+        } else {
+          const seed = normalize(makeInitialState())
+          skipPublish.current = true
+          setState(seed)
+          await pushBoard(seed)
+        }
+      } catch {
+        /* offline: keep the local cache */
+      }
+      if (!alive) return
+      quietUntil.current = Date.now() + 1500
+      setHydrated(true)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // Cache locally and push changes to the shared store.
+  useEffect(() => {
+    saveState(KEY, state)
+    if (!hydrated) return
+    if (skipPublish.current) {
+      skipPublish.current = false
+      return
+    }
+    quietUntil.current = Date.now() + 4000
+    const t = setTimeout(() => pushBoard(state), 700)
+    return () => clearTimeout(t)
+  }, [state, hydrated])
+
+  // Pick up changes made in another browser or tab.
+  useEffect(() => {
+    if (!hydrated) return
+    const id = setInterval(async () => {
+      if (Date.now() < quietUntil.current) return
+      try {
+        const remote = await pullBoard()
+        if (!remote) return
+        setState((prev) => (JSON.stringify(prev) === JSON.stringify(remote) ? prev : normalize(remote)))
+      } catch {
+        /* ignore transient errors */
+      }
+    }, 5000)
+    return () => clearInterval(id)
+  }, [hydrated])
 
   const notify = (msg) => {
     clearTimeout(toastTimer.current)
