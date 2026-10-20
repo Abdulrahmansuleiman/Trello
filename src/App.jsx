@@ -39,6 +39,7 @@ export default function App() {
   const toastTimer = useRef(null)
   const quietUntil = useRef(0)
   const skipPublish = useRef(true)
+  const lastPulled = useRef('')
 
   // Load the shared board from the server. If nothing is stored yet, publish
   // the canonical seed so every browser starts from the same content.
@@ -50,6 +51,7 @@ export default function App() {
         if (!alive) return
         if (remote) {
           skipPublish.current = true
+          lastPulled.current = JSON.stringify(remote)
           setState(normalize(remote))
         } else {
           const seed = normalize(makeInitialState())
@@ -90,7 +92,11 @@ export default function App() {
       try {
         const remote = await pullBoard()
         if (!remote) return
-        setState((prev) => (JSON.stringify(prev) === JSON.stringify(remote) ? prev : normalize(remote)))
+        const sig = JSON.stringify(remote)
+        if (sig === lastPulled.current) return
+        lastPulled.current = sig
+        skipPublish.current = true
+        setState(normalize(remote))
       } catch {
         /* ignore transient errors */
       }
