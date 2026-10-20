@@ -1,5 +1,5 @@
 import { readBoard, writeBoard, storeReady } from './_store.js'
-import { buildCards } from './_ideas.js'
+import { buildCards, librarySize } from './_ideas.js'
 
 function authorised(req) {
   const secret = process.env.CRON_SECRET
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     const cards = buildCards(board, count)
 
     if (!cards.length) {
-      return res.status(200).json({ ok: true, added: 0, note: 'every angle in the library is already on the board' })
+      return res.status(200).json({ ok: true, added: 0, note: 'every angle in the library is already on the board', library: librarySize() })
     }
 
     ideas.cards = [...(ideas.cards || []), ...cards]
@@ -45,6 +45,7 @@ export default async function handler(req, res) {
       ok: true,
       added: cards.length,
       titles: cards.map((c) => c.title),
+      library: librarySize(),
       ...written,
     })
   } catch (e) {
