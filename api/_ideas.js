@@ -61,6 +61,27 @@ const stagesForDay = (day, limit) => {
   return [...Array(limit - 1).fill('TOF'), other]
 }
 
+export { stagesForDay }
+
+export function cardsFromIdeas(ideas) {
+  const day = Math.floor(Date.now() / 86400000)
+  return ideas.map((idea, i) => {
+    const stage = ['TOF', 'VALUE', 'BOF'].includes(idea.stage) ? idea.stage : 'TOF'
+    const seed = {
+      n: Number(idea.type) || (stage === 'BOF' ? 13 : 11),
+      hook: String(idea.hook || '').trim(),
+      belief: String(idea.belief || '').trim(),
+      teach: String(idea.teach || '').trim(),
+      q: String(idea.question || '').trim(),
+      angle: String(idea.angle || '').trim(),
+      value: String(idea.value || '').trim(),
+    }
+    return makeCard(stage, seed, day + i)
+  })
+}
+
+export { key as titleKey }
+
 export function buildCards(board, count) {
   const taken = new Set()
   for (const list of board.lists || []) {
