@@ -18,7 +18,7 @@ export const LABELS = {
 }
 
 export const MEMBERS = [
-  { id: 'm1', name: 'Raymon Suleiman', initials: 'RS', color: '#0079BF' },
+  { id: 'm1', name: 'Abdulrahman Suleiman', initials: 'AS', color: '#0079BF' },
   { id: 'm2', name: 'Filmer', initials: 'FL', color: '#F2D600' },
   { id: 'm3', name: 'Editor', initials: 'ED', color: '#EB5A46' },
   { id: 'm4', name: 'QA', initials: 'QA', color: '#C377E0' },

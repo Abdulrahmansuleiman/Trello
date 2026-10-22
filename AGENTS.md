@@ -7,7 +7,8 @@ Scope: **the board only** — not the wider LinkedinOS project.
 Every card represents **one post**.
 
 - **Card Title = the HOOK** — the hook of the post, always. Nothing else.
-- **Card Description ("Post body") = the BODY** — the full post copy goes here.
+  It is the literal first line of the post: no type prefix ("TOF #11"), no label, no summary. The body follows on from it and never repeats it.
+- **Card Description ("Post body") = the BODY** — the full post copy goes here, starting after the hook.
 
 So when creating or editing a card: the top title field is the hook, the description field is the post body. Never put the body in the title.
 
