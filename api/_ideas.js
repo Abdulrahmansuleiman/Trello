@@ -35,8 +35,8 @@ function makeCard(stage, seed, slot) {
       {
         id: `c-${stamp}-${Math.random().toString(36).slice(2, 6)}`,
         authorId: 'm1',
-        authorName: 'Raymon Suleiman',
-        initials: 'RS',
+        authorName: 'Abdulrahman Suleiman',
+        initials: 'AS',
         color: '#0079BF',
         text: `Image: ${name} (Drive, Image for posts)`,
         createdAt: new Date().toISOString(),
