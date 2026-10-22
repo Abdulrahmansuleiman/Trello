@@ -163,8 +163,26 @@ export function stripDashes(text) {
     .trim()
 }
 
+// Old names still sitting in browser cache or old comments. Rewritten on load.
+const NAME_FIXES = {
+  Raymon: 'Abdulrahman',
+  'Raymon Suleiman': 'Abdulrahman Suleiman',
+}
+
+const fixName = (name, initials) => {
+  if (typeof name !== 'string') return { name, initials }
+  const next = NAME_FIXES[name] || name
+  return next === name ? { name, initials } : { name: next, initials: 'AS' }
+}
+
 export function sanitizeState(state) {
   if (!state || !Array.isArray(state.lists)) return state
+
+  const members = (Array.isArray(state.members) ? state.members : []).map((m) => {
+    const fixed = fixName(m.name, m.initials)
+    return { ...m, name: fixed.name, initials: fixed.initials }
+  })
+
   const lists = state.lists.map((l) => ({
     ...l,
     title: typeof l.title === 'string' ? l.title : String(l.title || ''),
@@ -173,7 +191,12 @@ export function sanitizeState(state) {
       title: stripDashes(c.title),
       desc: stripDashes(c.desc),
       checklist: (c.checklist || []).map((t) => ({ ...t, text: stripDashes(t.text) })),
+      comments: (c.comments || []).map((cm) => {
+        const fixed = fixName(cm.authorName, cm.initials)
+        return { ...cm, authorName: fixed.name, initials: fixed.initials }
+      }),
     })),
   }))
-  return { ...state, lists }
+
+  return { ...state, members, lists }
 }
