@@ -20,6 +20,7 @@ export default function CardItem({
   onDragStart,
   onDragEnd,
   onDragOverCard,
+  onDropAt,
 }) {
   const cardLabels = (card.labels || []).map((id) => labels[id]).filter(Boolean)
   const cardMembers = (card.members || [])
@@ -38,16 +39,38 @@ export default function CardItem({
   return (
     <div
       className={`card${isDragging ? ' dragging' : ''}${dropBefore ? ' drop-before' : ''}`}
+      data-card-id={card.id}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = 'move'
+        try {
+          e.dataTransfer.setData('text/plain', card.id)
+        } catch {
+          /* some browsers block setData on synthetic events */
+        }
         onDragStart(card.id, listId)
       }}
       onDragEnd={onDragEnd}
       onDragOver={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        onDragOverCard(listId, card.id)
+        const box = e.currentTarget.getBoundingClientRect()
+        const after = e.clientY > box.top + box.height / 2
+        if (after) {
+          const next = e.currentTarget.nextElementSibling
+          onDragOverCard(listId, next && next.getAttribute('data-card-id'))
+        } else {
+          onDragOverCard(listId, card.id)
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const draggedId = e.dataTransfer.getData('text/plain') || card.id
+        const box = e.currentTarget.getBoundingClientRect()
+        const after = e.clientY > box.top + box.height / 2
+        const next = e.currentTarget.nextElementSibling
+        onDropAt(draggedId, after && next ? next.getAttribute('data-card-id') : card.id)
       }}
       onClick={() => onOpen(card.id)}
     >

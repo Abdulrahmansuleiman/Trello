@@ -1,7 +1,7 @@
 import { IconLogo, IconStar, IconChevron, IconShare, IconDots } from './icons.jsx'
 import { Avatar } from './common.jsx'
 
-export default function TopBar({ title, starred, members, onRename, onToggleStar }) {
+export default function TopBar({ title, starred, members, status, rev, onRename, onToggleStar, onRetry }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -40,6 +40,25 @@ export default function TopBar({ title, starred, members, onRename, onToggleStar
       </div>
 
       <div className="topbar-right">
+        <button
+          type="button"
+          className={`save-state ${status}`}
+          onClick={status === 'error' ? onRetry : undefined}
+          title={
+            status === 'error'
+              ? 'Your latest change is not on the server yet. Click to retry now.'
+              : `Board revision ${rev}`
+          }
+        >
+          <span className="save-dot" />
+          {status === 'saved'
+            ? 'Saved'
+            : status === 'saving'
+              ? 'Saving…'
+              : status === 'error'
+                ? 'Not saved, retry'
+                : 'Loading…'}
+        </button>
         <div className="member-stack">
           {members.slice(0, 5).map((m) => (
             <Avatar key={m.id} member={m} size="sm" />

@@ -1,202 +1,89 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import TopBar from './components/TopBar.jsx'
 import List from './components/List.jsx'
 import CardModal from './components/CardModal.jsx'
 import { IconPlus, IconX } from './components/icons.jsx'
-import { LABELS, makeInitialState, ensureLists, sanitizeState } from './lib/seed.js'
-import { loadState, saveState, uid } from './lib/storage.js'
+import { LABELS } from './lib/seed.js'
+import { uid } from './lib/storage.js'
+import useBoardSync from './lib/sync.js'
 
-const KEY = 'launchops-trello-board-v2'
-
-const normalize = (s) => (s && Array.isArray(s.lists) ? sanitizeState(ensureLists(s)) : s)
-
-const pullBoard = async () => {
-  const r = await fetch('/api/board', { cache: 'no-store' })
-  if (!r.ok) return null
-  const j = await r.json()
-  return j && j.ok && j.state ? j.state : null
-}
-
-const pushBoard = (state) =>
-  fetch('/api/board', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(state),
-  }).catch(() => null)
+const emptyCard = (title) => ({
+  id: uid('card'),
+  title,
+  labels: [],
+  members: [],
+  desc: '',
+  due: null,
+  checklist: [],
+  comments: [],
+})
 
 export default function App() {
-  const seedRef = useRef(null)
-  if (seedRef.current === null) seedRef.current = normalize(loadState(KEY, makeInitialState()))
+  const { state, status, rev, run, retryNow } = useBoardSync()
 
-  const [state, setState] = useState(seedRef.current)
-  const [hydrated, setHydrated] = useState(false)
   const [openCardId, setOpenCardId] = useState(null)
   const [dragging, setDragging] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
   const [addListOpen, setAddListOpen] = useState(false)
   const [newListTitle, setNewListTitle] = useState('')
   const [toast, setToast] = useState(null)
-  const toastTimer = useRef(null)
-  const quietUntil = useRef(0)
-  const skipPublish = useRef(true)
-  const lastPulled = useRef('')
 
-  // Load the shared board from the server. If nothing is stored yet, publish
-  // the canonical seed so every browser starts from the same content.
-  useEffect(() => {
-    let alive = true
-    ;(async () => {
-      try {
-        const remote = await pullBoard()
-        if (!alive) return
-        if (remote) {
-          skipPublish.current = true
-          lastPulled.current = JSON.stringify(remote)
-          setState(normalize(remote))
-        } else {
-          const seed = normalize(makeInitialState())
-          skipPublish.current = true
-          setState(seed)
-          await pushBoard(seed)
-        }
-      } catch {
-        /* offline: keep the local cache */
-      }
-      if (!alive) return
-      quietUntil.current = Date.now() + 1500
-      setHydrated(true)
-    })()
-    return () => {
-      alive = false
-    }
-  }, [])
-
-  // Cache locally and push changes to the shared store.
-  useEffect(() => {
-    saveState(KEY, state)
-    if (!hydrated) return
-    if (skipPublish.current) {
-      skipPublish.current = false
-      return
-    }
-    quietUntil.current = Date.now() + 4000
-    const t = setTimeout(() => pushBoard(state), 700)
-    return () => clearTimeout(t)
-  }, [state, hydrated])
-
-  // Pick up changes made in another browser or tab.
-  useEffect(() => {
-    if (!hydrated) return
-    const id = setInterval(async () => {
-      if (Date.now() < quietUntil.current) return
-      try {
-        const remote = await pullBoard()
-        if (!remote) return
-        const sig = JSON.stringify(remote)
-        if (sig === lastPulled.current) return
-        lastPulled.current = sig
-        skipPublish.current = true
-        setState(normalize(remote))
-      } catch {
-        /* ignore transient errors */
-      }
-    }, 5000)
-    return () => clearInterval(id)
-  }, [hydrated])
-
-  const notify = (msg) => {
-    clearTimeout(toastTimer.current)
+  const notify = useCallback((msg) => {
     setToast(msg)
-    toastTimer.current = setTimeout(() => setToast(null), 2200)
-  }
+    setTimeout(() => setToast((cur) => (cur === msg ? null : cur)), 2200)
+  }, [])
 
   const findCard = (lists, id) => {
     for (const l of lists) {
-      const c = l.cards.find((c) => c.id === id)
+      const c = l.cards.find((x) => x.id === id)
       if (c) return { card: c, listId: l.id }
     }
     return null
   }
 
   const moveCard = (cardId, targetListId, beforeCardId = null) => {
-    setState((prev) => {
-      const src = findCard(prev.lists, cardId)
-      if (!src) return prev
-      const lists = prev.lists.map((l) => ({ ...l, cards: [...l.cards] }))
-      const fromList = lists.find((l) => l.id === src.listId)
-      const idx = fromList.cards.findIndex((c) => c.id === cardId)
-      const [card] = fromList.cards.splice(idx, 1)
-
-      const toList = lists.find((l) => l.id === targetListId)
-      if (!toList) return prev
-      const pos = beforeCardId ? toList.cards.findIndex((c) => c.id === beforeCardId) : -1
-      const at = pos >= 0 ? pos : toList.cards.length
-      toList.cards.splice(at, 0, card)
-
-      if (src.listId !== targetListId) {
-        notify(`Card moved to ${toList.title}`)
-      }
-      return { ...prev, lists }
-    })
     setDragging(null)
     setDropTarget(null)
+    if (!cardId || !targetListId) return
+
+    const src = findCard(state.lists, cardId)
+    if (!src) return
+    if (src.listId === targetListId) {
+      const list = state.lists.find((l) => l.id === targetListId)
+      const currentIndex = list.cards.findIndex((c) => c.id === cardId)
+      const targetIndex = beforeCardId
+        ? list.cards.findIndex((c) => c.id === beforeCardId)
+        : list.cards.length - 1
+      if (targetIndex === currentIndex) return
+    }
+
+    run({ type: 'move', cardId, toListId: targetListId, beforeCardId: beforeCardId || null })
+
+    const targetTitle = (state.lists.find((l) => l.id === targetListId) || {}).title
+    if (src.listId !== targetListId && targetTitle) notify(`Moved to ${targetTitle}`)
   }
 
-  const addCard = (listId, title) =>
-    setState((prev) => ({
-      ...prev,
-      lists: prev.lists.map((l) =>
-        l.id === listId
-          ? {
-              ...l,
-              cards: [
-                ...l.cards,
-                { id: uid('card'), title, labels: [], members: [], desc: '', due: null, checklist: [], comments: [] },
-              ],
-            }
-          : l
-      ),
-    }))
+  const addCard = (listId, title) => {
+    const clean = String(title || '').trim()
+    if (!clean) return
+    run({ type: 'addCard', listId, card: emptyCard(clean) })
+  }
 
   const addList = () => {
-    const t = newListTitle.trim()
-    if (!t) return
-    setState((prev) => ({
-      ...prev,
-      lists: [...prev.lists, { id: uid('list'), title: t, cards: [] }],
-    }))
+    const title = newListTitle.trim()
+    if (!title) return
+    run({ type: 'addList', list: { id: uid('list'), title, cards: [] } })
     setNewListTitle('')
     setAddListOpen(false)
   }
 
-  const renameList = (listId, title) =>
-    setState((prev) => ({
-      ...prev,
-      lists: prev.lists.map((l) => (l.id === listId ? { ...l, title } : l)),
-    }))
-
-  const renameBoard = (title) => setState((prev) => ({ ...prev, board: { ...prev.board, title } }))
-
-  const toggleStar = () =>
-    setState((prev) => ({ ...prev, board: { ...prev.board, starred: !prev.board.starred } }))
-
-  const updateCard = (cardId, patch) =>
-    setState((prev) => ({
-      ...prev,
-      lists: prev.lists.map((l) => ({
-        ...l,
-        cards: l.cards.map((c) => (c.id === cardId ? { ...c, ...patch } : c)),
-      })),
-    }))
+  const renameList = (listId, title) => run({ type: 'renameList', listId, title })
+  const renameBoard = (title) => run({ type: 'renameBoard', title })
+  const toggleStar = () => run({ type: 'setStar', starred: !state.board.starred })
+  const updateCard = (cardId, patch) => run({ type: 'updateCard', cardId, patch })
 
   const deleteCard = (cardId) => {
-    setState((prev) => ({
-      ...prev,
-      lists: prev.lists.map((l) => ({
-        ...l,
-        cards: l.cards.filter((c) => c.id !== cardId),
-      })),
-    }))
+    run({ type: 'deleteCard', cardId })
     setOpenCardId(null)
     notify('Card deleted')
   }
@@ -209,8 +96,11 @@ export default function App() {
         title={state.board.title}
         starred={state.board.starred}
         members={state.members}
+        status={status}
+        rev={rev}
         onRename={renameBoard}
         onToggleStar={toggleStar}
+        onRetry={retryNow}
       />
 
       <main className="board">
@@ -230,9 +120,11 @@ export default function App() {
               setDragging(null)
               setDropTarget(null)
             }}
-            onDragOverCard={(listId, cardId) => setDropTarget({ listId, beforeCardId: cardId })}
-            onDragOverList={(listId) => setDropTarget({ listId, beforeCardId: null })}
-            onDropList={(listId) => moveCard(dragging && dragging.cardId, listId, dropTarget && dropTarget.beforeCardId)}
+            onDragOverCard={(listId, cardId) => setDropTarget({ listId, beforeCardId: cardId || null })}
+            onDragOverList={(listId, beforeCardId) =>
+              setDropTarget({ listId, beforeCardId: beforeCardId || null })
+            }
+            onDropAt={(listId, cardId, beforeCardId) => moveCard(cardId, listId, beforeCardId)}
           />
         ))}
 

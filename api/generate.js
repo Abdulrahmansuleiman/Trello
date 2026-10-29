@@ -1,4 +1,4 @@
-import { readBoard, writeBoard, storeReady } from './_store.js'
+import { readBoard, commitOps, pruneHistory, storeReady } from './_store.js'
 import { buildCards, cardsFromIdeas, stagesForDay, titleKey, librarySize } from './_ideas.js'
 import { generateIdeas, modelConfigured } from './_llm.js'
 
@@ -32,7 +32,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const board = await readBoard()
+    const snapshot = await readBoard()
+    const board = snapshot && snapshot.state
     if (!board) return res.status(409).json({ ok: false, error: 'board is empty' })
 
     const ideasList = (board.lists || []).find((l) => l.title === 'Ideas')
@@ -92,8 +93,9 @@ export default async function handler(req, res) {
       })
     }
 
-    ideasList.cards = [...(ideasList.cards || []), ...cards]
-    const written = await writeBoard(board)
+    const ops = cards.map((card) => ({ type: 'addCard', listId: ideasList.id, card }))
+    const written = await commitOps(ops)
+    await pruneHistory().catch(() => 0)
 
     return res.status(200).json({
       ok: true,
@@ -102,7 +104,8 @@ export default async function handler(req, res) {
       titles: cards.map((c) => c.title),
       warning,
       library: librarySize(),
-      ...written,
+      rev: written.rev,
+      applied: written.applied,
     })
   } catch (e) {
     return res.status(500).json({ ok: false, error: String((e && e.message) || e) })

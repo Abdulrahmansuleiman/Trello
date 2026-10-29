@@ -188,6 +188,52 @@ select {
   background: rgba(255, 255, 255, 0.22);
 }
 
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-right: 10px;
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(0, 0, 0, 0.22);
+  cursor: default;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.save-state .save-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+.save-state.saved .save-dot {
+  background: #61bd4f;
+}
+.save-state.saving .save-dot {
+  background: #f2d600;
+  animation: save-pulse 1s ease-in-out infinite;
+}
+.save-state.error {
+  color: #ffd6d1;
+  background: rgba(235, 90, 70, 0.32);
+  cursor: pointer;
+}
+.save-state.error .save-dot {
+  background: #eb5a46;
+}
+@keyframes save-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* ---------- Board ---------- */
 .board {
   flex: 1 1 auto;

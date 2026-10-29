@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import CardItem from './CardItem.jsx'
-import { IconPlus, IconX, IconDots } from './icons.jsx'
+import { IconPlus, IconX } from './icons.jsx'
 
 export default function List({
   list,
@@ -15,7 +15,7 @@ export default function List({
   onDragEnd,
   onDragOverCard,
   onDragOverList,
-  onDropList,
+  onDropAt,
 }) {
   const [composing, setComposing] = useState(false)
   const [text, setText] = useState('')
@@ -36,6 +36,16 @@ export default function List({
     requestAnimationFrame(() => taRef.current && taRef.current.focus())
   }
 
+  // Where would the dragged card land if it was dropped right here?
+  const insertionPoint = (event) => {
+    const cards = Array.from(event.currentTarget.querySelectorAll('[data-card-id]'))
+    for (const el of cards) {
+      const box = el.getBoundingClientRect()
+      if (event.clientY < box.top + box.height / 2) return el.getAttribute('data-card-id')
+    }
+    return null
+  }
+
   const isTarget = dropTarget && dropTarget.listId === list.id
   const endTarget = isTarget && !dropTarget.beforeCardId
 
@@ -44,11 +54,12 @@ export default function List({
       className={`list${endTarget ? ' dragover' : ''}`}
       onDragOver={(e) => {
         e.preventDefault()
-        onDragOverList(list.id)
+        onDragOverList(list.id, insertionPoint(e))
       }}
       onDrop={(e) => {
         e.preventDefault()
-        onDropList(list.id, null)
+        const draggedId = e.dataTransfer.getData('text/plain') || (dragging && dragging.cardId)
+        onDropAt(list.id, draggedId, insertionPoint(e))
       }}
     >
       <div className="list-header">
@@ -84,6 +95,7 @@ export default function List({
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDragOverCard={onDragOverCard}
+            onDropAt={(draggedId, beforeCardId) => onDropAt(list.id, draggedId, beforeCardId)}
           />
         ))}
 
