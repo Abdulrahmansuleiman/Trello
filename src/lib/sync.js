@@ -266,24 +266,41 @@ export default function useBoardSync() {
 
   // Refresh from other browsers and from the agent, but only when we have
   // nothing unsaved and only when the revision actually moved forward.
+  const pullOnce = useCallback(async () => {
+    if (!readyRef.current || inflightRef.current || queueRef.current.length) return
+    try {
+      const remote = await readRemote()
+      if (!remote.state) return
+      if (remote.rev <= revRef.current) return
+      revRef.current = remote.rev
+      setRev(remote.rev)
+      publish(normalize(remote.state))
+      setStatus('saved')
+    } catch {
+      /* transient, the next tick retries */
+    }
+  }, [publish])
+
   useEffect(() => {
-    const id = setInterval(async () => {
-      if (!readyRef.current || inflightRef.current || queueRef.current.length) return
+    const id = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return
-      try {
-        const remote = await readRemote()
-        if (!remote.state) return
-        if (remote.rev <= revRef.current) return
-        revRef.current = remote.rev
-        setRev(remote.rev)
-        publish(normalize(remote.state))
-        setStatus('saved')
-      } catch {
-        /* transient, the next tick retries */
-      }
+      pullOnce()
     }, POLL_MS)
     return () => clearInterval(id)
-  }, [publish])
+  }, [pullOnce])
+
+  // Coming back to a tab should show the current board straight away.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') pullOnce()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+    }
+  }, [pullOnce])
 
   // Never lose a drag because the page is closing.
   useEffect(() => {
