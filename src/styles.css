@@ -1080,3 +1080,32 @@ textarea.input-dark {
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+/* ---------- Post link ---------- */
+.link-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.link-row .input-dark {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.link-open {
+  flex: 0 0 auto;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge.link-badge {
+  text-decoration: none;
+  color: var(--card-sub);
+}
+
+.badge.link-badge:hover {
+  color: var(--blue);
+}

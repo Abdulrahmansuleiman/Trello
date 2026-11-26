@@ -17,6 +17,7 @@ const emptyCard = (title) => ({
   due: null,
   checklist: [],
   comments: [],
+  postUrl: null,
 })
 
 export default function App() {

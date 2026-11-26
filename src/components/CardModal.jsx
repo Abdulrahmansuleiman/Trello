@@ -9,6 +9,7 @@ import {
   IconClock,
   IconComment,
   IconEye,
+  IconLink,
 } from './icons.jsx'
 import { dueStatus, uid, timeAgo } from '../lib/storage.js'
 import { CURRENT_USER } from '../lib/seed.js'
@@ -313,6 +314,33 @@ export default function CardModal({
               <button className="btn-blue" onClick={addItem}>
                 <IconPlus size={14} /> Add
               </button>
+            </div>
+          </div>
+
+          <div className="section">
+            <div className="field-label">
+              <IconLink size={14} /> LinkedIn post link
+            </div>
+            <div className="link-row">
+              <input
+                className="input-dark"
+                placeholder="https://www.linkedin.com/posts/…"
+                value={card.postUrl || ''}
+                onChange={(e) => onUpdate(card.id, { postUrl: e.target.value.trim() || null })}
+              />
+              {card.postUrl && (
+                <a
+                  className="btn-blue link-open"
+                  href={card.postUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open
+                </a>
+              )}
+            </div>
+            <div className="empty-hint" style={{ marginTop: 6 }}>
+              Paste it after you publish. The 9am Telegram prompt uses this link.
             </div>
           </div>
 

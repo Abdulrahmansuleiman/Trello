@@ -7,6 +7,7 @@ import {
   IconAttachment,
   IconComment,
   IconEye,
+  IconLink,
 } from './icons.jsx'
 import { formatDue, dueStatus } from '../lib/storage.js'
 import { latestReading, formatCount, IMPRESSION_TARGET } from '../lib/metrics.js'
@@ -43,7 +44,8 @@ export default function CardItem({
     hasDesc ||
     card.cover ||
     commentCount > 0 ||
-    Boolean(impressions)
+    Boolean(impressions) ||
+    Boolean(card.postUrl)
 
   return (
     <div
@@ -129,6 +131,18 @@ export default function CardItem({
                 <IconComment size={14} />
                 {commentCount}
               </span>
+            )}
+            {card.postUrl && (
+              <a
+                className="badge link-badge"
+                href={card.postUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Open the post on LinkedIn"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <IconLink size={14} />
+              </a>
             )}
             {impressions && (
               <span

@@ -65,8 +65,28 @@ export const IconCheckbox = ({ size = 14 }) => (
   </svg>
 )
 
-export const IconEye = ({ size = 14 }) => (
+export const IconLink = ({ size = 14 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} style={s} aria-hidden="true">
+    <path
+      d="M10 13a5 5 0 007.1 0l2.4-2.4a5 5 0 00-7.1-7.1L11 4.9"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14 11a5 5 0 00-7.1 0l-2.4 2.4a5 5 0 007.1 7.1l1.4-1.4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+export const IconEye = ({ size = 14 }) => (  <svg viewBox="0 0 24 24" width={size} height={size} style={s} aria-hidden="true">
     <path
       d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"
       fill="none"
