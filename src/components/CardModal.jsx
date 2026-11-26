@@ -1,9 +1,29 @@
 import { useState, useRef, useEffect } from 'react'
 import { Avatar, LabelChip } from './common.jsx'
 import CoverImage from './CoverImage.jsx'
-import { IconX, IconCheck, IconTrash, IconPlus, IconClock, IconComment } from './icons.jsx'
+import {
+  IconX,
+  IconCheck,
+  IconTrash,
+  IconPlus,
+  IconClock,
+  IconComment,
+  IconEye,
+} from './icons.jsx'
 import { dueStatus, uid, timeAgo } from '../lib/storage.js'
 import { CURRENT_USER } from '../lib/seed.js'
+import {
+  readings,
+  latestReading,
+  bestReading,
+  growth,
+  addReading,
+  removeReading,
+  formatCount,
+  formatDate,
+  today,
+  IMPRESSION_TARGET,
+} from '../lib/metrics.js'
 
 function AutoTextarea({ value, onChange, className, placeholder, minRows = 1 }) {
   const ref = useRef(null)
@@ -41,6 +61,8 @@ export default function CardModal({
 }) {
   const [newItem, setNewItem] = useState('')
   const [commentText, setCommentText] = useState('')
+  const [impressionsInput, setImpressionsInput] = useState('')
+  const [readingDate, setReadingDate] = useState(today())
   const list = lists.find((l) => l.cards.some((c) => c.id === card.id))
   const checklist = card.checklist || []
   const comments = card.comments || []
@@ -97,6 +119,21 @@ export default function CardModal({
   const removeComment = (id) => {
     onUpdate(card.id, { comments: comments.filter((c) => c.id !== id) })
   }
+
+  const allReadings = readings(card)
+  const lastReading = latestReading(card)
+  const topReading = bestReading(card)
+  const change = growth(card)
+  const peak = Math.max(IMPRESSION_TARGET, ...allReadings.map((r) => r.impressions), 1)
+
+  const saveReading = () => {
+    const next = addReading(card, impressionsInput, readingDate)
+    if (!next) return
+    onUpdate(card.id, { metrics: next })
+    setImpressionsInput('')
+    setReadingDate(today())
+  }
+  const dropReading = (id) => onUpdate(card.id, { metrics: removeReading(card, id) })
 
   return (
     <div
@@ -287,6 +324,93 @@ export default function CardModal({
               value={card.desc || ''}
               onChange={(e) => onUpdate(card.id, { desc: e.target.value })}
             />
+          </div>
+
+          <div className="section">
+            <div className="field-label">
+              <IconEye size={14} /> Impressions
+            </div>
+
+            {lastReading ? (
+              <>
+                <div className="metric-summary">
+                  <div className="metric-main">
+                    <span className="metric-value">{formatCount(lastReading.impressions)}</span>
+                    <span className="metric-cap">
+                      latest, logged {formatDate(lastReading.date)}
+                    </span>
+                  </div>
+                  <div className="metric-side">
+                    {change != null && (
+                      <span className={`metric-delta ${change >= 0 ? 'up' : 'down'}`}>
+                        {change >= 0 ? '+' : ''}
+                        {formatCount(change)} since first
+                      </span>
+                    )}
+                    {topReading && topReading.id !== lastReading.id && (
+                      <span className="metric-note">
+                        Best {formatCount(topReading.impressions)}
+                      </span>
+                    )}
+                    <span className="metric-note">
+                      {lastReading.impressions >= IMPRESSION_TARGET
+                        ? `Past the ${formatCount(IMPRESSION_TARGET)} target`
+                        : `${formatCount(IMPRESSION_TARGET - lastReading.impressions)} to target`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="metric-bars">
+                  {allReadings.map((r) => (
+                    <div className="metric-bar-row" key={r.id}>
+                      <span className="metric-bar-date">{formatDate(r.date)}</span>
+                      <div className="metric-bar-track">
+                        <span
+                          className={`metric-bar-fill${
+                            r.impressions >= IMPRESSION_TARGET ? ' hit' : ''
+                          }`}
+                          style={{ width: `${Math.max(2, (r.impressions / peak) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="metric-bar-count">{formatCount(r.impressions)}</span>
+                      <button
+                        className="btn-ghost metric-bar-del"
+                        aria-label="Remove reading"
+                        onClick={() => dropReading(r.id)}
+                      >
+                        <IconX size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="empty-hint">
+                No numbers logged yet. Add today's impression count after you post.
+              </div>
+            )}
+
+            <div className="metric-composer">
+              <input
+                className="input-dark"
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="Impressions"
+                value={impressionsInput}
+                onChange={(e) => setImpressionsInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveReading()}
+              />
+              <input
+                className="input-dark"
+                type="date"
+                value={readingDate}
+                onChange={(e) => setReadingDate(e.target.value)}
+              />
+              <button className="btn-blue" onClick={saveReading} disabled={!impressionsInput}>
+                <IconPlus size={14} /> Log
+              </button>
+            </div>
           </div>
 
           <div className="section">

@@ -6,8 +6,10 @@ import {
   IconDescription,
   IconAttachment,
   IconComment,
+  IconEye,
 } from './icons.jsx'
 import { formatDue, dueStatus } from '../lib/storage.js'
+import { latestReading, formatCount, IMPRESSION_TARGET } from '../lib/metrics.js'
 
 export default function CardItem({
   card,
@@ -32,9 +34,16 @@ export default function CardItem({
   const hasDesc = card.desc && card.desc.trim().length > 0
   const commentCount = (card.comments || []).length
   const dueSt = dueStatus(card.due, card.dueComplete)
+  const impressions = latestReading(card)
 
   const showFoot =
-    cardMembers.length > 0 || card.due || total > 0 || hasDesc || card.cover || commentCount > 0
+    cardMembers.length > 0 ||
+    card.due ||
+    total > 0 ||
+    hasDesc ||
+    card.cover ||
+    commentCount > 0 ||
+    Boolean(impressions)
 
   return (
     <div
@@ -119,6 +128,17 @@ export default function CardItem({
               <span className="badge">
                 <IconComment size={14} />
                 {commentCount}
+              </span>
+            )}
+            {impressions && (
+              <span
+                className={`badge impressions${
+                  impressions.impressions >= IMPRESSION_TARGET ? ' hit' : ''
+                }`}
+                title={`${formatCount(impressions.impressions)} impressions on ${impressions.date}`}
+              >
+                <IconEye size={14} />
+                {formatCount(impressions.impressions)}
               </span>
             )}
           </div>

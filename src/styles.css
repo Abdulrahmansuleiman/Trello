@@ -913,3 +913,170 @@ textarea.input-dark {
   box-shadow: var(--shadow-modal);
   z-index: 100;
 }
+
+/* ---------- Post impressions ---------- */
+.statsbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 6px 16px;
+  background: var(--board-bg-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.stats-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stats-item b {
+  color: #e6edf3;
+  font-weight: 600;
+}
+
+.stats-best-title {
+  color: var(--muted);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge.impressions.hit {
+  color: #1f845a;
+  background: rgba(97, 189, 79, 0.16);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.metric-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.metric-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e6edf3;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-cap {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metric-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.metric-delta {
+  font-weight: 600;
+}
+
+.metric-delta.up {
+  color: var(--green);
+}
+
+.metric-delta.down {
+  color: var(--red);
+}
+
+.metric-note {
+  color: var(--muted);
+}
+
+.metric-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+
+.metric-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metric-bar-date {
+  flex: 0 0 56px;
+  width: 56px;
+}
+
+.metric-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+.metric-bar-fill.hit {
+  background: var(--green);
+}
+
+.metric-bar-count {
+  flex: 0 0 60px;
+  width: 60px;
+  text-align: right;
+  color: #e6edf3;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-bar-del {
+  opacity: 0.35;
+  padding: 2px;
+}
+
+.metric-bar-row:hover .metric-bar-del {
+  opacity: 1;
+}
+
+.metric-composer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.metric-composer .input-dark[type='number'] {
+  flex: 1 1 auto;
+  min-width: 110px;
+}
+
+.metric-composer .input-dark[type='date'] {
+  flex: 0 0 160px;
+  width: 160px;
+}
+
+.metric-composer .btn-blue {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

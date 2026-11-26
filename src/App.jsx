@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import TopBar from './components/TopBar.jsx'
+import StatsBar from './components/StatsBar.jsx'
 import List from './components/List.jsx'
 import CardModal from './components/CardModal.jsx'
 import { IconPlus, IconX } from './components/icons.jsx'
@@ -103,8 +104,9 @@ export default function App() {
         onRetry={retryNow}
       />
 
-      <main className="board">
-        {state.lists.map((list) => (
+      <StatsBar lists={state.lists} />
+
+      <main className="board">        {state.lists.map((list) => (
           <List
             key={list.id}
             list={list}
